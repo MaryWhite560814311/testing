@@ -71,4 +71,4 @@ workflows:
       - run-files:
           matrix:
             parameters:
-              job-name: [t0,t1,t12,t13,thu4,t5,16,t17,thu8,thu9,thu10,thu11,thu12,thu13,thu14,thu15,t16,thu17,t18,thu19,thu20,thu21,thu22,thu23,thu24,t25,t26,t27,thu28,t29]
+              job-name: [t0,t1,t12,t13,thu4,t5,t6,t17,thu8,thu9,thu10,thu11,thu12,thu13,thu14,thu15,t16,thu17,t18,thu19,thu20,thu21,thu22,thu23,thu24,t25,t26,t27,thu28,t29]
